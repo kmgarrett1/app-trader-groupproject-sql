@@ -20,29 +20,41 @@ from play_store_apps;*/
 --save information.  download button on the top right corner.  lets you save results to file.  --
 --git checkout -b RudyMoya    this is how you create a branch--
 
-
-
-
-
-/*select a.name, a.price, a.review_count, a.rating, a.content_rating, a.primary_genre, p.install_count, p.type
-from app_store_apps as a
-left join play_store_apps as p
-ON a.name = p.name;*/
-
+----------
 
 select 
 	a.name, 
-	a.price, 
-	a.review_count, 
-	a.rating, 
-	a. content_rating_num, 
-	a.primary_genre, 
-	CAST(REPLACE(p.install_count, '+','') AS int) AS install_count_num, 
+	CAST(a.price AS money),
+	CAST(a.rating AS numeric) AS a_rating,
+	CAST(p.rating AS numeric) AS p_rating,
+	CAST(REPLACE(a.content_rating, '+','') AS numeric) AS content_rating_num,
+	p.content_rating,
+	a.primary_genre,
+	CAST(REPLACE(REPLACE(p.install_count, '+',''), ',','') AS numeric) AS install_count_num,
 	p.type
 from app_store_apps as a
 inner join play_store_apps as p
 ON a.name = p.name
-ORDER BY a.review_count DESC, a.rating DESC, a.price, install_count DESC;
+WHERE 
+	a.price < '1' 
+	AND p.price < '1'
+	AND a.rating BETWEEN 4.5 AND 5.0
+	AND p.rating BETWEEN 4.5 AND 5.0
+GROUP BY
+	a.name,
+	a.price,
+	a.review_count,
+	a.rating,
+	p.rating,
+	a.content_rating,
+	p.content_rating,
+	a.primary_genre,
+	p.install_count,
+	p.type
+ORDER BY 
+	p_rating DESC,
+	a_rating DESC,
+	install_count_num DESC;
 
 
 
@@ -51,7 +63,4 @@ ORDER BY a.review_count DESC, a.rating DESC, a.price, install_count DESC;
 
 
 
-
-
-
-
+	
