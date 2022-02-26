@@ -21,9 +21,9 @@ select
 		p_genre,
 		install_count_num
 		FROM
-		(select 
-			a.name AS name, 
-			CAST(a.price AS money) AS a_price,
+		(select
+			a.name AS name,
+			CAST(a.price AS numeric) AS a_price,
 			CAST(a.rating AS numeric) AS a_rating,
 			CAST(a.review_count AS integer) AS a_review_count,
 			CAST(p.rating AS numeric) AS p_rating,
@@ -36,14 +36,12 @@ select
 		from app_store_apps as a
 		inner join play_store_apps as p
 		ON a.name = p.name
-		WHERE 
-			a.price < '1' 
-			AND p.price < '1'
-			AND a.rating BETWEEN 4.5 AND 5.0
+		WHERE
+			a.rating BETWEEN 4.5 AND 5.0
 			AND p.rating BETWEEN 4.5 AND 5.0
 		GROUP BY
 			a.name,
-			a.price,
+			a_price,
 			a_rating,
 			a_review_count,
 			p_rating,
@@ -52,7 +50,7 @@ select
 			a.primary_genre,
 			p.genres,
 			p.install_count
-		ORDER BY 
+		ORDER BY
 			p_rating DESC,
 			a_rating DESC,
 			install_count_num DESC) AS subquery1
@@ -79,4 +77,5 @@ GROUP BY
 	install_count_num
 ORDER BY
 	weighted_avg_rating DESC,
+	total_reviews DESC,
 	install_count_num DESC;
