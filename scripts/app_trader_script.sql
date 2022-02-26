@@ -1,103 +1,4 @@
-/*SELECT 
-	play_store_apps.name, 
-	rating, 
-	install_count
-FROM play_store_apps
-WHERE rating IS NOT NULL 
-ORDER BY rating DESC;*/
-
-/*SELECT 
-	name, 
-	rating, 
-	install_count
-FROM play_store_apps
-WHERE rating IS NOT NULL AND rating > 4.6
-ORDER BY install_count DESC;*/
-
-/*SELECT 
-	p.name,
-	a.name,
-	p.rating,
-	a.rating, 
-	a.review_count,
-	p.review_count
-FROM play_store_apps AS p
-LEFT JOIN app_store_apps AS a
-ON p.name = a.name
-ORDER BY a.review_count, p.review_count;*/
-
 /*SELECT
-	a.name,
-	CAST(a.review_count AS integer),
-	p.review_count,
-	a.rating,
-	p.rating
-FROM app_store_apps AS a
-INNER JOIN play_store_apps AS p
-ON a.name = p.name
-WHERE p.review_count >50000 AND CAST(a.review_count AS integer) >50000
-ORDER BY a.rating DESC, p.rating DESC;*/
-
-/*select 
-	a.name, 
-	a.price, 
-	a.review_count, 
-	a.rating, 
-	REPLACE(a.content_rating, '+','') AS content_rating, 
-	a.primary_genre, 
-	REPLACE(p.install_count, '+','') AS install_count, 
-	p.type
-from app_store_apps as a
-inner join play_store_apps as p
-ON a.name = p.name
-ORDER BY a.review_count DESC, a.rating DESC, a.price, install_count DESC;*/
-
-/*select 
-	a.name, 
-	a.price, 
-	a.review_count, 
-	a.rating, 
-	CAST(REPLACE(a.content_rating, '+','') AS int) AS content_rating_num, 
-	a.primary_genre, 
-	CAST(REPLACE(p.install_count, '+','') AS int) AS install_count_num, 
-	p.type
-from app_store_apps as a
-inner join play_store_apps as p
-ON a.name = p.name
-ORDER BY a.review_count DESC, a.rating DESC, a.price, install_count DESC;*/
-
-/*select 
-    a.name, 
-	CAST(a.price AS money),
-	CAST(p.price AS money),
-	CAST(a.review_count AS numeric) AS a_review_count_num, 
-	CAST(p.review_count AS numeric) AS p_review_count_num,
-	CAST(a.rating AS numeric) AS rating_num,
-	p.rating,
-	CAST(REPLACE(a.content_rating, '+','') AS numeric) AS content_rating_num, 
-	a.primary_genre, 
-	CAST(REPLACE(REPLACE(p.install_count, '+',''), ',','') AS numeric) AS install_count_num,
-	p.type
-from app_store_apps as a
-inner join play_store_apps as p
-ON a.name = p.name
-WHERE a.price < '1' AND p.price < '1'
-ORDER BY 
-	rating_num DESC,
-	install_count_num DESC,
-	a_review_count_num DESC,  
-	a.price;*/
-
-/*SELECT 
-	a.name, 
-	p.name,
-	a.rating AS a_rating
-FROM app_store_apps AS a
-JOIN play_store_apps AS p
-ON a.name = p.name
-GROUP BY a.name, p.name, a_rating;*/
-
-select 
 	a.name, 
 	CAST(a.price AS money),
 	CAST(a.rating AS numeric) AS a_rating,
@@ -107,8 +8,8 @@ select
 	a.primary_genre,
 	CAST(REPLACE(REPLACE(p.install_count, '+',''), ',','') AS numeric) AS install_count_num,
 	p.type
-from app_store_apps as a
-inner join play_store_apps as p
+FROM app_store_apps as a
+INNER JOIN play_store_apps as p
 ON a.name = p.name
 WHERE 
 	a.price < '1' 
@@ -129,5 +30,31 @@ GROUP BY
 ORDER BY 
 	p_rating DESC,
 	a_rating DESC,
-	install_count_num DESC;
+	install_count_num DESC;*/
 	
+/*Calculating how much each app will make in its lifetime
+Purchase Price = $10,000 (because we are using free apps
+Apps earn $5,000 per month on average - 1/2 goes to developers and 1/2 goes to app trader
+$1,000 on marketing 
+Projected lifespan :an app with a rating of 0 can be expected to be in use for 1 year, an app with a rating of 1.0 can be expected to last 3 years, and an app with a rating of 4.0 can 	be expected to last 9 years. Ratings should be rounded to the nearest 0.5 to evaluate an app's likely longevity.*/
+
+/*2500 is half of the expected monthly revenue (5000)after splitting 1/2 wtih developers, 	1000 is monthly cost of marketing, 2n+1 calculates expected longevity, *12 to account for 12 months of revenue per year of longevity
+Cost is 10,000 times the price of the app. For apps that are priced from free up to 		$1.00, the purchase price is $10,000*/
+
+SELECT 
+	a.name,
+	(2*a.rating + 1) AS longevity,
+	((2500 - 1000)*(2*a.rating+1)*12) AS expected_revenue,
+	CASE WHEN a.price <= 1.00 THEN 10000
+		 WHEN a.price > 1.00 THEN a.price*10000 END AS purchase_price,
+	((2500 - 1000)*(2*a.rating+1)*12) - (CASE WHEN a.price <= 1.00 THEN 10000
+		 WHEN a.price > 1.00 THEN a.price*10000 END) AS net
+FROM app_store_apps AS a
+INNER JOIN play_store_apps AS p
+ON a.name = p.name
+GROUP BY 
+	a.name,
+	longevity,
+	purchase_price
+ORDER BY
+	net DESC;
