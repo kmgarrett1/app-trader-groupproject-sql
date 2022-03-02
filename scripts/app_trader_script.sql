@@ -58,3 +58,4 @@ GROUP BY
 	purchase_price
 ORDER BY
 	net DESC;
+	
