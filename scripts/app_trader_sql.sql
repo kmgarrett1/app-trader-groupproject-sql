@@ -36,9 +36,6 @@ select
 		from app_store_apps as a
 		inner join play_store_apps as p
 		ON a.name = p.name
-		WHERE
-			a.rating BETWEEN 4.5 AND 5.0
-			AND p.rating BETWEEN 4.5 AND 5.0
 		GROUP BY
 			a.name,
 			a_price,
